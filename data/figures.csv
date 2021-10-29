@@ -1,19 +1,19 @@
-﻿ngram,group,description
-gym,R,Incumbent resources
-gym membership,R,Incumbent resources
- personal trainer,R,Incumbent resources
-home workout,P,Practices
-workout routine ,P,Practices
- gym equipment,P,Practices
-home gym,PL,Place resources
- #garagegym ,PL,Place resources
- #outdoorgym,PL,Place resources
-Shred,T,Tech resources
- Zwift ,T,Tech resources
- tonal,T,Tech resources
-Peloton ,HP,High-priced resources
-Bowflex,HP,High-priced resources
- NordicTrack,HP,High-priced resources
- calisthenics,LP,Low-priced resources
- jump rope,LP,Low-priced resources
- resistance bands,LP,Low-priced resources
+﻿ngram,gterm,group,description
+gym,gym,R,Incumbent resources
+gym membership,gym membership,R,Incumbent resources
+ personal trainer, personal trainer,R,Incumbent resources
+home workout,home workout,P,Practices
+workout routine ,workout routine ,P,Practices
+ gym equipment, gym equipment,P,Practices
+home gym,home gym,PL,Place resources
+ #garagegym ,garage gym,PL,Place resources
+ #outdoorgym,outdoor gym,PL,Place resources
+Shred,Shred,T,Tech resources
+ Zwift , Zwift ,T,Tech resources
+ tonal, tonal,T,Tech resources
+Peloton ,Peloton ,HP,High-priced resources
+Bowflex,Bowflex,HP,High-priced resources
+ NordicTrack, NordicTrack,HP,High-priced resources
+ calisthenics, calisthenics,LP,Low-priced resources
+ jump rope, jump rope,LP,Low-priced resources
+ resistance bands, resistance bands,LP,Low-priced resources

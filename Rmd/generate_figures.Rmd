@@ -54,17 +54,6 @@ write_csv(sw_data, "../data/storywrangler_gym_terms_forplot_2021-10-29a.csv")
 ```
 
 
-```{r}
-#fig <-
-  
-df <-   sw_data %>%
-  filter(query == "#outdoorgym") 
-
-df %>%
-  storywranglr::plot_contagiogram(min_date = "2018-01-01", max_date = Sys.Date(), fig_theme = "jsr")
-
-fig
-```
 
 
 
@@ -88,11 +77,80 @@ for (i in 1:nrow(figures)){
   
   #fig
   ggsave(plot = fig,
-         filename = paste0("figs/", filename))
+         filename = paste0("figs/storywrangler/", filename),
+          width = 5.24,
+         height = 4.17
+  )
   
   
 }
 
 
 ```
+
+# google trends
+
+
+```{r}
+min_date <- lubridate::as_date("2018-01-01")
+max_date <- lubridate::as_date("2021-10-29")
+vline_date <- "2020-03-11"
+
+# gt <- figures %>%
+#   mutate(gtrends = purrr::map(gterm, gtrendsR::gtrends, geo = "US", time = "2018-01-01 2021-10-29"))
+# 
+# 
+# gtrends <- gt %>%
+#   mutate(gt = purrr::map(gtrends, pluck, "interest_over_time")) %>%
+#   unnest(cols = c(gt))
+# 
+# write_csv(select(gtrends, -gtrends), "../data/google_trends_2021-10-29.csv")
+
+gtrends <- read_csv("../data/google_trends_2021-10-29.csv")
+
+for (i in 1:nrow(figures)){
+  gterm_now <- figures$gterm[[i]]
+  group <- figures$group[[i]]
+  description <- figures$description[[i]]
+  
+  num <- (i-1) %% 3 + 1
+  
+  filename <- sprintf("%s%s - %s - %s (%s).png", group, num, "gtrend", gterm_now, description)
+  message(filename)
+  
+  
+  forplot <- gtrends %>%
+    filter(gterm == gterm_now)
+  
+  if (min(forplot$date) > lubridate::as_date(min_date)) forplot <- add_row(forplot, date = as_date(min_date, hits= NA))
+  if (max(forplot$date) < lubridate::as_date(max_date)) forplot <- add_row(forplot, date = as_date(max_date, hits= NA))
+  
+  fig <- forplot %>%
+    mutate(date = as_date(date)) %>%
+    arrange(date) %>%
+    filter(date >= min_date & date <= max_date) %>%
+    ggplot() + 
+    geom_line(aes(x=date, y=hits),
+              size = 1) +
+    ggplot2::geom_vline(xintercept = as.Date(vline_date),
+                        colour = "black", linetype = "dashed") +
+    theme_minimal() +
+    ggplot2::scale_y_continuous(expand = c(0,0)) +
+    ggplot2::scale_x_date(expand = c(0,0)) +
+    ggplot2::labs (x = NULL, y = NULL) +
+    labs(title = sprintf("Google Trends: '%s'", gterm_now)) +
+     ggplot2::theme(plot.title = element_text(hjust = 0.5)) 
+  
+  
+    #fig
+  ggsave(plot = fig,
+         filename = paste0("figs/gtrends/", filename),
+          width = 5.24,
+         height = 4.17
+  )
+  
+}
+```
+
+
 
