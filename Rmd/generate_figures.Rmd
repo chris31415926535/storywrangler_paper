@@ -1,0 +1,92 @@
+---
+title: "generating figures"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=TRUE, warning = FALSE)
+library(tidyverse)
+library(storywranglr)
+library(lubridate)
+
+figures <- read_csv ("../data/figures.csv")
+
+sw_data <- read_csv("../data/storywrangler_gym_terms_forplot_2021-10-29a.csv")
+
+
+# function used to parse SW data and get it tidy
+make_sw_plotready <- function(sw, start_date) {
+  mutate(sw, across(where(is.numeric), function(x) if_else(is.na(x), 0, x)),
+         rank = if_else(rank==0, 1000000, rank),
+         rank_no_rt = if_else(rank_no_rt==0, 1000000, rank_no_rt)) %>%
+    select(date, rank, query) %>%
+    filter(date >= start_date) %>%
+    arrange(date) %>%
+    distinct() %>%
+    pivot_wider(names_from = date, values_from = rank, values_fill = 1000000) %>%
+    pivot_longer(cols = -query,
+                 names_to = "date", 
+                 values_to = "rank")
+  
+}
+```
+
+
+```{r get_data, eval = FALSE}
+
+get_sw_data <- function(figures) {
+  df <- figures %>%
+    mutate(sw = purrr::map(ngram, storywranglr::ngrams))
+  
+  test <- df %>%
+    unnest(cols = c(sw)) #%>%    make_sw_plotready(start_date = "2015-01-01")
+  
+  return(test)
+  
+}
+
+sw_data <- get_sw_data(figures)
+
+write_csv(sw_data, "../data/storywrangler_gym_terms_forplot_2021-10-29a.csv")
+
+```
+
+
+```{r}
+fig <- sw_data %>%
+  filter(query == "gym") %>%
+  storywranglr::plot_contagiogram(min_date = "2018-01-01", max_date = Sys.Date(), fig_theme = "jsr")
+
+fig
+```
+
+
+
+```{r message=TRUE}
+
+for (i in 1:nrow(figures)){
+  ngram_now <- figures$ngram[[i]]
+  group <- figures$group[[i]]
+  description <- figures$description[[i]]
+  
+  num <- (i %% 3) + 1
+  
+  filename <- sprintf("%s%s - %s (%s).png", group, num, ngram_now, description)
+  message(filename)
+  print(filename)
+  
+  df <- sw_data %>% filter(ngram == ngram_now)
+  
+  fig <- df %>%
+    storywranglr::plot_contagiogram(min_date = "2018-01-01", fig_theme = "jsr")
+  
+  #fig
+  ggsave(plot = fig,
+         filename = paste0("figs/", filename))
+  
+  
+}
+
+
+```
+

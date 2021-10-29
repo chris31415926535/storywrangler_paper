@@ -1,0 +1,163 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(storywranglr)
+library(lubridate)
+
+knitr::opts_chunk$set(echo = TRUE)
+
+start_date <- as_date("2018-01-01")
+
+search_terms <-"coronavirus pandemic virus lockdown quarantine Coronavirus deaths masks cases distancing China testing workers tested PPE crisis mask COVID Fauci Corona"
+
+get_data <- function(search_terms){
+  
+  df <- storywranglr::ngrams(query = search_terms) %>%
+    mutate(across(where(is.numeric), function(x) if_else(is.na(x), 0, x)),
+           rank = if_else(rank==0, 1000000, rank),
+           rank_no_rt = if_else(rank_no_rt==0, 1000000, rank_no_rt))
+  
+  
+  df_forplot <- df %>%
+    select(date, rank, query) %>%
+    filter(date > start_date) %>%
+    pivot_wider(names_from = date, values_from = rank, values_fill = 1000000) %>%
+    pivot_longer(cols = -query,
+                 names_to = "date", 
+                 values_to = "rank") %>%
+    mutate(date = as_date(date),
+           query = factor(query, levels = rev(c("coronavirus", "pandemic", "virus", "lockdown", "quarantine", "Coronavirus", "deaths", "masks", "cases", "distancing", "China", "testing", "workers", "tested", "PPE", "crisis", "mask", "COVID", "Fauci", "Corona"))))
+  write_csv(df_forplot, file = "../data/covid_data_forplot.csv")
+}
+
+
+df_forplot <- read_csv("../data/covid_data_forplot.csv")
+
+
+```
+
+## Top Terms
+
+One more request: a graph to illustrate the natural experiment intervention, with 1-grams: 
+* "virus" 
+* "deaths" 
+* "quarantine" 
+* "lockdown" and
+* "distancing".
+
+The could be lines on a single chart, or a set of panels. You decide. If you opt for panels, consider adding "masks" for symmetry. These terms are based on another Storywrangler article of the "top 20" pandemic terms, published in PLOS ONE.
+
+
+
+
+With gaps filled in
+
+```{r}
+
+
+
+df_forplot %>%
+  ggplot() +
+  geom_tile(aes(x=date, y=query, fill = rank)) +
+  geom_vline(xintercept = as_date("2020-03-11")) +
+  scale_fill_continuous(
+    trans = ggforce::trans_reverser("log"), 
+    type = "viridis",
+    breaks= 10^(1:6),
+    labels = scales::trans_format("log10", scales::math_format(10^.x))) +
+  labs(x = NULL, y = NULL, fill = "Rank") +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  scale_x_date(expand = c(0.01,0))
+```
+
+
+
+
+## Exercise Terms
+
+
+
+```{r}
+get_gymterms <- function() {
+  terms <- c(
+    "gym", "gym membership", "personal trainer",
+    "home workout", "workout routine" , "gym equipment", 
+    "home gym", "#garagegym" , "#outdoorgym",
+    "Shred", "Zwift" , "tonal",
+    "Peloton" ,"Bowflex", "NordicTrack",
+     "calistenics", "jump rope", "resistance bands")
+  
+  results <- purrr::map_dfr(terms, storywranglr::ngrams)
+  
+  write_csv(results, "../data/storywrangler_gym_terms.csv")
+  
+  gym_forplot <- results %>%
+    mutate(across(where(is.numeric), function(x) if_else(is.na(x), 0, x)),
+           rank = if_else(rank==0, 1000000, rank),
+           rank_no_rt = if_else(rank_no_rt==0, 1000000, rank_no_rt)) %>%
+    select(date, rank, query) %>%
+    filter(date >= start_date) %>%
+    arrange(date) %>%
+    distinct() %>%
+    pivot_wider(names_from = date, values_from = rank, values_fill = 1000000) %>%
+    pivot_longer(cols = -query,
+                 names_to = "date", 
+                 values_to = "rank")
+  
+  write_csv(gym_forplot, "../data/storywrangler_gym_terms_forplot.csv")}
+
+
+gym_forplot <- read_csv("../data/storywrangler_gym_terms_forplot.csv")
+```
+
+```{r}
+
+gym_forplot %>%
+  ggplot() +
+  geom_tile(aes(x=date, y=query, fill = rank)) +
+  geom_vline(xintercept = as_date("2020-03-11")) +
+  scale_fill_continuous(
+    trans = ggforce::trans_reverser("log"), 
+    type = "viridis",
+    breaks= 10^(1:6),
+    labels = scales::trans_format("log10", scales::math_format(10^.x))) +
+  labs(x = NULL, y = NULL, fill = "Rank") +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  scale_x_date(expand = c(0.01,0))
+```
+
+
+### "home exercise" "home gym" and "gym equipment"
+
+that will show a macro upwards trend at March 11
+
+
+### "gym" "gym membership" and "fitness club"
+
+each will show a downturn at March 11
+
+
+### ""Bowflex" "Peloton bike" and "Nordictrack"
+
+Capital intense purchases surge at Christmas, and peaked again at March 11
+
+
+### "shred" "zwift" and "7 minute workout"
+
+Fourth test: Technology - app-enabled workouts: 
+Big spike in demand in March
+
+
+### "home gym" "garage gym" and "outdoor gym"
+
+Fifth test: New places and spaces 
+
+###  - "resistance bands" "calistenics" and "DIY gym"
+
+low-budget (non market) alternatives

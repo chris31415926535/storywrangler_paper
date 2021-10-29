@@ -1,0 +1,19 @@
+﻿ngram,group,description
+gym,R,Incumbent resources
+gym membership,R,Incumbent resources
+ personal trainer,R,Incumbent resources
+home workout,P,Practices
+workout routine ,P,Practices
+ gym equipment,P,Practices
+home gym,PL,Place resources
+ #garagegym ,PL,Place resources
+ #outdoorgym,PL,Place resources
+Shred,T,Tech resources
+ Zwift ,T,Tech resources
+ tonal,T,Tech resources
+Peloton ,HP,High-priced resources
+Bowflex,HP,High-priced resources
+ NordicTrack,HP,High-priced resources
+ calisthenics,LP,Low-priced resources
+ jump rope,LP,Low-priced resources
+ resistance bands,LP,Low-priced resources
