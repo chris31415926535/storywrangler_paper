@@ -153,4 +153,49 @@ for (i in 1:nrow(figures)){
 ```
 
 
+# heat maps
+
+```{r}
+
+gym_forplot <- read_csv("../data/storywrangler_gym_terms_forplot.csv")
+
+gym_forplot %>%
+  ggplot() +
+  geom_tile(aes(x=date, y=query, fill = rank)) +
+  geom_vline(xintercept = as_date("2020-03-11")) +
+  scale_fill_continuous(
+    trans = ggforce::trans_reverser("log"), 
+    type = "gradient",
+    low = "#000000", high = "#FFFFFF",
+    breaks= 10^(1:6),
+    labels = scales::trans_format("log10", scales::math_format(10^.x))) +
+  labs(x = NULL, y = NULL, fill = "Rank") +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  scale_x_date(expand = c(0.01,0)) 
+
+```
+
+```{r}
+covid_forplot <- read_csv("../data/covid_data_forplot.csv")
+
+
+fig <- covid_forplot %>%
+  ggplot() +
+  geom_tile(aes(x=date, y=query, fill = rank)) +
+  geom_vline(xintercept = as_date("2020-03-11")) +
+  scale_fill_continuous(
+    trans = ggforce::trans_reverser("log"), 
+    #type = "viridis",
+        type = "gradient",
+    low = "#000000", high = "#FFFFFF",
+    breaks= 10^(1:6),
+    labels = scales::trans_format("log10", scales::math_format(10^.x))) +
+  labs(x = NULL, y = NULL, fill = "Rank") +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  scale_x_date(expand = c(0.01,0))
+
+ggsave(plot = fig, filename = "figs/heatmaps/covid_heatmap.png")
+```
 
